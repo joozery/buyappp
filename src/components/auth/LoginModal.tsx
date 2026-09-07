@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mail, Phone, KeyRound, Eye, EyeOff, X, ArrowLeft } from 'lucide-react';
 import { signIn } from "next-auth/react";
-import { Turnstile } from "@marsidev/react-turnstile";
+
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -21,14 +21,13 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const turnstileRef = useRef<any>(null);
+
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(60);
 
-  const [logoUrl, setLogoUrl] = useState("https://pub-ee29977ae9524b05b628923eee00188a.r2.dev/logo/logo.png");
+  const [logoUrl, setLogoUrl] = useState("");
 
   useEffect(() => {
     fetch("/api/public-settings", { cache: "no-store" })
@@ -48,25 +47,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const resetToMain = () => {
     setStep("main");
     setErrorMsg("");
-    setTurnstileToken(null);
-    turnstileRef.current?.reset();
-  };
-
-  const verifyTurnstile = async (): Promise<boolean> => {
-    if (!turnstileToken) return false;
-    const res = await fetch("/api/admin/verify-turnstile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: turnstileToken }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      setErrorMsg("กรุณายืนยัน CAPTCHA ใหม่อีกครั้ง");
-      turnstileRef.current?.reset();
-      setTurnstileToken(null);
-      return false;
-    }
-    return true;
   };
 
   const sendEmailOtp = async () => {
@@ -212,54 +192,34 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 </div>
               )}
 
-              <div className="flex justify-center">
-                <Turnstile
-                  ref={turnstileRef}
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                  onSuccess={(token) => setTurnstileToken(token)}
-                  onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
-                />
-              </div>
-
               {/* Continue button */}
               {loginMethod === "email" ? (
                 <button
-                  disabled={!email || !turnstileToken || isLoading}
-                  onClick={async () => {
-                    if (!email || !turnstileToken) return;
-                    setIsLoading(true);
+                  disabled={!email || isLoading}
+                  onClick={() => {
+                    if (!email) return;
+                    setStep("password");
                     setErrorMsg("");
-                    try {
-                      if (!(await verifyTurnstile())) return;
-                      setStep("password");
-                      setErrorMsg("");
-                    } catch {
-                      setErrorMsg("เกิดข้อผิดพลาด กรุณาลองใหม่");
-                    } finally {
-                      setIsLoading(false);
-                    }
                   }}
-                  className={`w-full text-white font-bold rounded-xl py-3.5 transition-colors mt-1 shadow-sm ${email && turnstileToken && !isLoading ? "bg-black hover:bg-gray-900" : "bg-black/50 cursor-not-allowed"}`}
+                  className={`w-full text-white font-bold rounded-xl py-3.5 transition-colors mt-1 shadow-sm ${email && !isLoading ? "bg-black hover:bg-gray-900" : "bg-black/50 cursor-not-allowed"}`}
                 >
                   {isLoading ? "กำลังตรวจสอบ..." : "ต่อ"}
                 </button>
               ) : (
                 <button
-                  disabled={phone.length !== 10 || !turnstileToken || isLoading}
+                  disabled={phone.length !== 10 || isLoading}
                   onClick={async () => {
-                    if (phone.length !== 10 || !turnstileToken) return;
+                    if (phone.length !== 10) return;
                     setIsLoading(true);
                     setErrorMsg("");
                     try {
-                      if (!(await verifyTurnstile())) return;
                       await sendPhoneOtp();
                     } catch {
                       setErrorMsg("เกิดข้อผิดพลาด กรุณาลองใหม่");
                       setIsLoading(false);
                     }
                   }}
-                  className={`w-full text-white font-bold rounded-xl py-3.5 transition-colors mt-1 shadow-sm ${phone.length === 10 && turnstileToken && !isLoading ? "bg-black hover:bg-gray-900" : "bg-black/50 cursor-not-allowed"}`}
+                  className={`w-full text-white font-bold rounded-xl py-3.5 transition-colors mt-1 shadow-sm ${phone.length === 10 && !isLoading ? "bg-black hover:bg-gray-900" : "bg-black/50 cursor-not-allowed"}`}
                 >
                   {isLoading ? "กำลังส่ง OTP..." : "ส่ง OTP ทาง SMS"}
                 </button>
