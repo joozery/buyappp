@@ -73,6 +73,8 @@ const menuGroups = [
       { name: "ศูนย์ช่วยเหลือ (FAQ)", icon: HelpCircle, href: "/admin/help" },
       { name: "วิธีการเล่น", icon: Gamepad2, href: "/admin/knowledge" },
       { name: "ตั้งค่าเว็บไซต์", icon: Settings, href: "/admin/settings" },
+      { name: "แอพพรีเมี่ยม", icon: Sparkles, href: "/admin/premium" },
+      { name: "การเชื่อมต่อ (Integrations)", icon: Zap, href: "/admin/integrations" },
       { name: "บันทึกระบบ (Logs)", icon: ScrollText, href: "/admin/logs" },
     ]
   }

@@ -62,14 +62,27 @@ export default function HeroBanner() {
         }
       }}
     >
-      {/* Background Images Slider */}
-      {settings.carousel.map((slide, idx) => (
-        <div
-          key={idx}
-          className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-100' : 'opacity-0'}`}
-          style={{ backgroundImage: `url('${slide.image}')` }}
-        />
-      ))}
+      {/* Background Images/Video Slider */}
+      {settings.carousel.map((slide, idx) => {
+        const isVideo = /\.(mp4|webm|ogg)(\?.*)?$/i.test(slide.image);
+        return isVideo ? (
+          <video
+            key={idx}
+            src={slide.image}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+          />
+        ) : (
+          <div
+            key={idx}
+            className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+            style={{ backgroundImage: `url('${slide.image}')` }}
+          />
+        );
+      })}
       
       {/* Dots Indicator */}
       {settings.carousel.length > 1 && (

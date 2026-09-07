@@ -1,4 +1,15 @@
-const CHAT_WEBHOOK = process.env.DISCORD_CHAT_WEBHOOK_URL;
+import { connectToDatabase } from "./mongoose";
+import Setting from "@/models/Setting";
+
+async function getChatWebhook(): Promise<string | null> {
+  try {
+    await connectToDatabase();
+    const s = await Setting.findOne({ key: "discord_chat_webhook_url" });
+    return s?.value || process.env.DISCORD_CHAT_WEBHOOK_URL || null;
+  } catch {
+    return process.env.DISCORD_CHAT_WEBHOOK_URL || null;
+  }
+}
 
 export async function notifyDiscordChat({
   userName,
@@ -15,6 +26,7 @@ export async function notifyDiscordChat({
   imageUrl?: string;
   isNew?: boolean;
 }) {
+  const CHAT_WEBHOOK = await getChatWebhook();
   if (!CHAT_WEBHOOK) return;
 
   const displayName = userName || userEmail || "ลูกค้า";

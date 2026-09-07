@@ -32,16 +32,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ไม่พบรูปภาพสลิป" }, { status: 400 });
     }
 
-    const SLIP2GO_API_KEY = process.env.SLIP2GO_API_KEY;
-
     await connectToDatabase();
 
     // โหลดบัญชีผู้รับที่ตั้งไว้ในหลังบ้าน
     const paymentSettings = await Setting.find({
-      key: { $in: ["payment_method", "payment_qr_account_number", "payment_qr_ref1", "promptpay_number"] },
+      key: { $in: ["payment_method", "payment_qr_account_number", "payment_qr_ref1", "promptpay_number", "slip2go_api_key"] },
     }).lean();
     const getSetting = (key: string) =>
       (paymentSettings.find((s: any) => s.key === key) as any)?.value;
+    const SLIP2GO_API_KEY = getSetting("slip2go_api_key") || process.env.SLIP2GO_API_KEY;
     const paymentMethod = String(getSetting("payment_method") || "promptpay");
     const normalize = (v: string) => String(v || "").replace(/[^0-9A-Za-z]/g, "");
     const qrAccountNumber = normalize(getSetting("payment_qr_account_number") || "");

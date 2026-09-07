@@ -19,6 +19,7 @@ const PUBLIC_KEYS = [
   "crypto_enabled", "crypto_wallet_address", "crypto_network", "crypto_rate_per_unit",
   "livechat_welcome_message", "livechat_case_closed_text", "livechat_case_open_text", "livechat_contact_text",
   "announcements", "auction_how_to_play",
+  "premium_hero_image",
 ];
 
 export async function GET() {

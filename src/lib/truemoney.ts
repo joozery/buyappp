@@ -57,11 +57,15 @@ export async function creditTopup(pending: any, transactionId: string | undefine
 // ดึงเงินเข้าล่าสุดจาก TrueMoney แล้วจับคู่กับรายการ pending ทั้งหมด
 // ใช้ทั้งจาก verify (ลูกค้า poll) และ poller ฝั่ง server — connectToDatabase ต้องถูกเรียกก่อน
 export async function matchLastReceive(): Promise<void> {
-  const numberSetting = await Setting.findOne({ key: "truemoney_number" }).lean();
+  const [numberSetting, receiveTokenSetting] = await Promise.all([
+    Setting.findOne({ key: "truemoney_number" }).lean(),
+    Setting.findOne({ key: "truemoney_receive_token" }).lean(),
+  ]);
   const truemoneyNumber = (numberSetting as any)?.value as string;
+  const receiveToken = (receiveTokenSetting as any)?.value || process.env.TRUEMONEY_RECEIVE_TOKEN;
 
   const apiRes = await fetch("https://apis.truemoneyservices.com/account/v1/my-last-receive", {
-    headers: { Authorization: `Bearer ${process.env.TRUEMONEY_RECEIVE_TOKEN}` },
+    headers: { Authorization: `Bearer ${receiveToken}` },
   });
   const data = await apiRes.json();
   if (data.status !== "ok" || !data.data) return;

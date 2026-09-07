@@ -29,14 +29,16 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
 
-    const [numberSetting, nameSetting, minTopupSetting] = await Promise.all([
+    const [numberSetting, nameSetting, minTopupSetting, linkTokenSetting] = await Promise.all([
       Setting.findOne({ key: "truemoney_number" }).lean(),
       Setting.findOne({ key: "site_name" }).lean(),
       Setting.findOne({ key: "min_topup_amount" }).lean(),
+      Setting.findOne({ key: "truemoney_link_token" }).lean(),
     ]);
     const truemoneyNumber = (numberSetting as any)?.value as string;
     const siteName = (nameSetting as any)?.value as string || "RareDrop";
     const minTopup = parseFloat((minTopupSetting as any)?.value) || 1;
+    const linkToken = (linkTokenSetting as any)?.value || process.env.TRUEMONEY_LINK_TOKEN;
 
     if (amount < minTopup) {
       return NextResponse.json({ error: `ยอดเติมเงินขั้นต่ำคือ ${minTopup} บาท` }, { status: 400 });
@@ -55,7 +57,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.TRUEMONEY_LINK_TOKEN}`,
+        Authorization: `Bearer ${linkToken}`,
       },
       body: JSON.stringify({
         mobile_number: truemoneyNumber,

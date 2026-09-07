@@ -13,6 +13,17 @@ import {
 import { connectToDatabase } from "@/lib/mongoose";
 import Inventory from "@/models/Inventory";
 import { notify } from "@/lib/notify";
+import Setting from "@/models/Setting";
+
+async function getDiscordSetting(key: string, envFallback: string): Promise<string> {
+  try {
+    await connectToDatabase();
+    const s = await Setting.findOne({ key });
+    return s?.value || process.env[envFallback] || "";
+  } catch {
+    return process.env[envFallback] || "";
+  }
+}
 
 const TICKET_CLAIM_PREFIX = "ticket_claim:";
 const TICKET_CLOSE_PREFIX = "ticket_close:";
@@ -159,7 +170,7 @@ export async function initDiscordBot(): Promise<Client> {
   if (cached.promise) return cached.promise;
 
   cached.promise = (async () => {
-    const token = process.env.DISCORD_BOT_TOKEN;
+    const token = await getDiscordSetting("discord_bot_token", "DISCORD_BOT_TOKEN");
     if (!token) throw new Error("DISCORD_BOT_TOKEN ไม่ได้ตั้งค่า");
 
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -189,8 +200,8 @@ export async function createDeliveryTicket(
 ): Promise<{ threadId: string; threadUrl: string } | null> {
   try {
     const client = await initDiscordBot();
-    const guildId = process.env.DISCORD_GUILD_ID;
-    const channelId = process.env.DISCORD_TICKET_CHANNEL_ID;
+    const guildId = await getDiscordSetting("discord_guild_id", "DISCORD_GUILD_ID");
+    const channelId = await getDiscordSetting("discord_ticket_channel_id", "DISCORD_TICKET_CHANNEL_ID");
     if (!guildId || !channelId) {
       console.warn("[discord-bot] DISCORD_GUILD_ID หรือ DISCORD_TICKET_CHANNEL_ID ไม่ได้ตั้งค่า");
       return null;

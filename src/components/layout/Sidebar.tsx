@@ -35,6 +35,7 @@ const menuItems = [
   { name: "กล่องสุ่มฟรีตามเลเวล", icon: Award, href: "/level-boxes" },
   { name: "สุ่มการ์ดพิเศษ", icon: Sparkles, href: "/cards" },
   { name: "เกมรังผึ้ง", icon: Hexagon, href: "/honeycomb" },
+  { name: "แอพพรีเมี่ยม", icon: Sparkles, href: "/premium" },
   { name: "ร้านค้า", icon: Briefcase, href: "/shop" },
   { name: "ผ่อนไอดีเกม", icon: Calculator, href: "/installment" },
   { name: "ประมูลไอดีเกม", icon: Gavel, href: "/auction" },
@@ -114,7 +115,7 @@ export function Sidebar() {
               alt={`${siteName} Logo`}
               width={400}
               height={100}
-              className="w-full max-w-[240px] h-auto object-contain drop-shadow-sm"
+              className="w-full max-w-[240px] h-auto object-contain"
               priority
             />
           </Link>
